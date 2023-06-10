@@ -21,15 +21,15 @@
 
 Distance Matrix:
 
-|0  1   1   2   3|
+|0  1   2   3   4|
 
-|1  0   3   1   2|
+|1  0   4   2   3|
 
-|1  3   0   2   1|
+|2  4   0   2   1|
 
-|2  1   2   0   1|
+|3  2   2   0   1|
 
-|3  2   1   1   0|
+|4  3   1   1   0|
 
 
 Earth Mover's Distances are naturally an increasing metric, i.e., larger numbers indicate worse histogram agreement.  To allow for EMDs to be compared directly against quintile or average scores, I created a normalization equation that preserves the shape of the EMD distribution, but scales it as 0 (Worst) - 5 (Best)
