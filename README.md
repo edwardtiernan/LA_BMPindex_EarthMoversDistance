@@ -20,6 +20,7 @@
  - Succeeding
 
 Distance Matrix:
+
 |0  1   1   2   3|
 
 |1  0   3   1   2|
