@@ -38,7 +38,7 @@ for ii in range(len(flat_array)):
 
 # Categorical Lines to Cross - Distance between the categories is equal to the number of operational threshold lines needed to cross
 # Threshold lines - Effluent = WQ Threshold, Influent = WQ Threshold, Effluent = Influent
-distance_matrix = np.array([[0.0, 1.0, 1.0, 2.0, 3.0], [1.0, 0.0, 3.0, 1.0, 2.0], [1.0, 3.0, 0.0, 2.0, 1.0], [2.0, 1.0, 2.0, 0.0, 1.0], [3.0, 2.0, 1.0, 1.0, 0.0]])
+distance_matrix = np.array([[0.0, 2.0, 1.0, 3.0, 3.5], [2.0, 0.0, 3.0, 1.0, 2.5], [1.0, 2.5, 0.0, 2.5, 2.0], [3.0, 1.0, 2.5, 0.0, 0.5], [3.5, 2.5, 2.0, 0.5, 0.0]])
 
 # Compute the Earth Movers Distance using a variable histogram, a target histogram, and a "work / distance" matrix
 def compute_EMD(observed_hist, pref_hist, distance_matrix):
@@ -105,10 +105,15 @@ for hh in range(len(histograms)):
     raw_EMD_scores[hh] = compute_EMD(histograms[hh], best_hist, distance_matrix)
     quint_scores[hh] = compute_quintscore(histograms[hh])
     modave_scores[hh] = compute_modifiedaverage(histograms[hh])
+    best_EMD = raw_EMD_scores[0]
     norm_EMD_score[hh] = normalize_EMDtoAverage(raw_EMD_scores[0], raw_EMD_scores[hh], categories)
     print(histograms[hh], norm_EMD_score[hh], quint_scores[hh], modave_scores[hh])
 
 
+rand_raw_EMD_scores = np.empty(counts)
+rand_norm_EMD_score = np.empty(counts)
+rand_quint_scores = np.empty(counts)
+rand_modave_scores = np.empty(counts)
 
 for jj in range(counts):
     # n random floats 
@@ -121,31 +126,29 @@ for jj in range(counts):
     # print("The sum is %d" % sum(bmp_hist))
     # print(bmp_hist)
     
-
-    # histogram bin centers
-    bin_centers = [1.0, 2.0, 3.0, 4.0, 5.0]
     bmp_ints = [float(value) for value in bmp_hist]
     bmp_counts = np.array(bmp_ints)
 
     # print(bmp_hist, compute_EMD(bmp_counts, pref_counts, distance_matrix), compute_quintscore(bmp_counts))
-
-    # histograms.append(bmp_hist)
-    # EMD_scores.append(compute_EMD(bmp_counts, pref_counts, distance_matrix))
-    # quint_scores.append(compute_quintscore(bmp_counts))
-
-# print(pref_counts, compute_EMD(pref_counts, pref_counts, distance_matrix), compute_quintscore(pref_counts))
+    rand_raw_EMD_scores[jj] = compute_EMD(bmp_counts, best_hist, distance_matrix)
+    rand_quint_scores[jj] = compute_quintscore(bmp_counts)
+    rand_modave_scores[jj] = compute_modifiedaverage(bmp_counts)
+    rand_norm_EMD_score[jj] = normalize_EMDtoAverage(best_EMD, rand_raw_EMD_scores[jj], categories)
+    print(bmp_counts, rand_norm_EMD_score[jj], rand_quint_scores[jj], rand_modave_scores[jj])
 
 # histograms.append(pref_counts)
 # EMD_scores.append(compute_EMD(pref_counts, pref_counts, distance_matrix))
 # quint_scores.append(compute_quintscore(pref_counts))
 
-# plt.scatter(quint_scores, norm_EMD_score)
-plt.scatter(modave_scores[0], norm_EMD_score[0], color='k', marker='*', label='Worst Hist')
-plt.scatter(modave_scores[1], norm_EMD_score[1], color='b', marker='*', label='Best Hist')
-plt.scatter(modave_scores[2], norm_EMD_score[2], color='g', marker='*', label='All 3s Hist')
-plt.scatter(modave_scores[3], norm_EMD_score[3], color='c', marker='*', label='2-4 Hist')
-plt.scatter(modave_scores[4], norm_EMD_score[4], color='r', marker='*', label='Equal Hist')
+plt.scatter(rand_quint_scores, rand_norm_EMD_score, color='k', marker='.', label='Random Sets')
+plt.scatter(quint_scores[0], norm_EMD_score[0], color='k', marker='*', s=10, label='All Fails')
+plt.scatter(quint_scores[1], norm_EMD_score[1], color='b', marker='*', label='All Succeeds')
+plt.scatter(quint_scores[2], norm_EMD_score[2], color='g', marker='*', label='All Contributing')
+plt.scatter(quint_scores[3], norm_EMD_score[3], color='c', marker='*', label='Subpar-Surpass Split')
+plt.scatter(quint_scores[4], norm_EMD_score[4], color='r', marker='*', label='Equal Distribution')
 plt.legend()
+plt.xlabel("Quintile Score: 1 (Worst) - 5 (Best)")
+plt.ylabel("normalized Earth Mover's Distance: 0 (Worst) - 5 (Best)")
 plt.show()
 
 quit()
