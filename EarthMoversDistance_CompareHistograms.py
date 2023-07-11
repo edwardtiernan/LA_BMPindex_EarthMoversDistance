@@ -2,52 +2,91 @@ import numpy as np
 import pyemd
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
+from cycler import cycler
 
 import random 
 import math 
 
 ## Global variables
-counts = 100 # Arbitrary number of BMPs in this set
+counts = 10000 # Number of sets to assess striation
+bmps = 100 # Number of BMPs in the set
 categories = 5 # Number of distinct operational conditions
 
-# Initialize numpy arrays with extreme BMP classification sets
-worst_array = np.full(counts, 1)  # All failing BMPs
-best_array = np.full(counts, 5)  # All succeeding BMPs
-allthree_array = np.full(counts, 3)  # All Contributing BMPs
-twofour_array = np.full(counts, 2)  # Half Subpar and Half Surpassing
-for ii in range(len(twofour_array)):
+# Initialize numpy arrays with test-case BMP classification sets
+intl_array = np.array([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, \
+             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, \
+             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]) # Copper scores from Int'l database on bioretention
+FF_array = np.full(bmps, 1)  # All failure
+MM_array = np.full(bmps, 2)  # All marginal 
+II_array = np.full(bmps, 3)  # All insufficient
+EE_array = np.full(bmps, 4)  # All excess
+SS_array = np.full(bmps, 5)  # All success
+Eq20_array = np.empty(bmps) # Equal representation of all 5 categories
+for ii in range(len(Eq20_array)):
+    if ii < bmps/categories:
+        Eq20_array[ii] = 1
+    if bmps/categories <= ii < 2*bmps/categories:
+        Eq20_array[ii] = 2
+    if 2*bmps/categories <= ii < 3*bmps/categories:
+        Eq20_array[ii] = 3
+    if 3*bmps/categories <= ii < 4*bmps/categories:
+        Eq20_array[ii] = 4
+    if ii >= 4*bmps/categories:
+        Eq20_array[ii] = 5
+FS50_array = np.full(bmps, 1) # Half Failure and Half Success
+for ii in range(len(FS50_array)):
     if ii % 2 == 0:
-        twofour_array[ii] = 4
-flat_array = np.empty(counts) # Equal representation of all 4 categories
-for ii in range(len(flat_array)):
-    if ii < counts/categories:
-        flat_array[ii] = 1
-    if counts/categories <= ii < 2*counts/categories:
-        flat_array[ii] = 2
-    if 2*counts/categories <= ii < 3*counts/categories:
-        flat_array[ii] = 3
-    if 3*counts/categories <= ii < 4*counts/categories:
-        flat_array[ii] = 4
-    if ii >= 4*counts/categories:
-        flat_array[ii] = 5
+        FS50_array[ii] = 5
+ME50_array = np.full(bmps, 2)  # Half Marginal and Half Excess
+for ii in range(len(ME50_array)):
+    if ii % 2 == 0:
+        ME50_array[ii] = 4
+MI50_array = np.full(bmps, 2)   # Half Marginal and Half Insufficient
+for ii in range(len(MI50_array)):
+    if ii % 2 == 0:
+        MI50_array[ii] = 3
 
-    
+"""
+Distance Matrices
 
+The following largely commented section contains various distance matrices for the threshold cross score (calculated by the Earth Mover's Distance algorithm).
+Distance arrays are determined by summing the threshold weights needed to cross from one category to each other.  Various distance matrices are created for 
+variable threshold weighting schemes.
+"""
 # Category Distance Matrix - Distance between the categories is equal to their integer difference
 # distance_matrix = np.array([[0.0, 1.0, 2.0, 3.0, 4.0], [1.0, 0.0, 1.0, 2.0, 3.0], [2.0, 1.0, 0.0, 1.0, 2.0], [3.0, 2.0, 1.0, 0.0, 1.0], [4.0, 3.0, 2.0, 1.0, 0.0]])
 
 # Categorical Lines to Cross - Distance between the categories is equal to the number of operational threshold lines needed to cross
-# Threshold lines - Effluent = WQ Threshold, Influent = WQ Threshold, Effluent = Influent
-distance_matrix = np.array([[0.0, 2.0, 1.0, 3.0, 3.5], [2.0, 0.0, 3.0, 1.0, 2.5], [1.0, 2.5, 0.0, 2.5, 2.0], [3.0, 1.0, 2.5, 0.0, 0.5], [3.5, 2.5, 2.0, 0.5, 0.0]])
+# Weights: Effluent = 2, Export = 1, Influent = 0.5
+# distance_matrix = np.array([[0.0, 2.0, 1.0, 3.0, 3.5], [2.0, 0.0, 3.5, 1.0, 1.5], [1.0, 3.5, 0.0, 2.5, 2.0], [3.0, 1.0, 2.5, 0.0, 0.5], [3.5, 1.5, 2.0, 0.5, 0.0]])
 
-# Compute the Earth Movers Distance using a variable histogram, a target histogram, and a "work / distance" matrix
+# Weights: Effluent = 1, Export = 2, Influent = 0.5
+distance_matrix = np.array([[0.0, 1.0, 2.0, 3.0, 3.5], [1.0, 0.0, 3.5, 2.0, 2.5], [2.0, 3.5, 0.0, 1.5, 1.0], [3.0, 2.0, 1.5, 0.0, 0.5], [3.5, 2.5, 1.0, 0.5, 0.0]])
+
+# Weights: Effluent = 1, Export = 2, Influent = 0.5, allowing for asymmetric traveling
+# distance_matrix = np.array([[0.0, 1.0, 2.0, 3.0, 3.0], [1.0, 0.0, 3.0, 2.0, 2.5], [2.0, 3.5, 0.0, 1.5, 1.0], [3.0, 2.0, 1.5, 0.0, 0.5], [3.5, 2.5, 1.0, 0.5, 0.0]])
+
+# Categorical Lines to Cross - Distance between the categories is equal to the number of operational threshold lines needed to cross
+# Weights: Effluent = 3, Export = 2, Influent = 1
+# distance_matrix = np.array([[0.0, 3.0, 2.0, 5.0, 5.0], [3.0, 0.0, 6.0, 2.0, 3.0], [2.0, 6.0, 0.0, 4.0, 3.0], [5.0, 2.0, 4.0, 0.0, 1.0], [5.0, 3.0, 3.0, 1.0, 0.0]])
+
+# Ken's Weights: Effluent = 2, Export = 1, Influent = 1
+# distance_matrix = np.array([[0.0, 2.0, 1.0, 3.0, 3.0], [2.0, 0.0, 4.0, 1.0, 2.0], [1.0, 4.0, 0.0, 3.0, 2.0], [3.0, 1.0, 3.0, 0.0, 1.0], [3.0, 2.0, 2.0, 1.0, 0.0]])
+
+
+"""
+Compute Functions
+"""
+
+# Compute the Earth Movers Distance using a variable histogram, a target histogram (All Success), and a distance matrix
 def compute_EMD(observed_hist, pref_hist, distance_matrix):
     EMD = pyemd.emd(observed_hist, pref_hist, distance_matrix)
     return EMD
 
-# Normalize the Earth Movers Distance score to being from (0, N) where 0 is the worst and N is the number of categories - successful BMPs are given rank N
+# Normalize the Earth Movers Distance score to being from (0, N) where 0 is the All Success score and N is equal to the sum of threshold weights needed to cross from Failure to Success
 def normalize_EMDtoAverage(max_EMD, EMD, categories):
-    norm_EMD = categories - categories * EMD / max_EMD
+    norm_EMD =  np.max(distance_matrix) * EMD / max_EMD
+    # norm_EMD = 4 - 3*EMD/max_EMD
     return norm_EMD
 
 # Compute the quintile score - weighted average with frequency where weight is the categorical score 
@@ -70,10 +109,10 @@ def compute_modifiedaverage(observed_hist):
         if cat == 1 or cat == 2:
             running_sum = running_sum + 2 * observed_hist[cat]
         if cat == 3:
-            running_sum = running_sum + 4 * observed_hist[cat]
+            running_sum = running_sum + 3 * observed_hist[cat]
         if cat == 4:
-            running_sum = running_sum + 5 * observed_hist[cat]
-    mod_average = running_sum/total_bmps
+            running_sum = running_sum + 4 * observed_hist[cat]
+    mod_average = float(running_sum/total_bmps)
     return mod_average
 
 # This subroutine converts an array of BMP categories into a histogram that can be analyzed
@@ -85,14 +124,20 @@ def hist_from_array(input_array, categories):
     return(hist)
 
 # Case study histograms converted from arrays
-worst_hist = hist_from_array(worst_array, categories)
-best_hist = hist_from_array(best_array, categories)
-allthree_hist = hist_from_array(allthree_array, categories)
-twofour_hist = hist_from_array(twofour_array, categories)
-flat_hist = hist_from_array(flat_array, categories)
+intl_hist = hist_from_array(intl_array, categories)
+FF_hist = hist_from_array(FF_array, categories)
+MM_hist = hist_from_array(MM_array, categories)
+II_hist = hist_from_array(II_array, categories)
+EE_hist = hist_from_array(EE_array, categories)
+SS_hist = hist_from_array(SS_array, categories)
+Eq20_hist = hist_from_array(Eq20_array, categories)
+FS50_hist = hist_from_array(FS50_array, categories)
+ME50_hist = hist_from_array(ME50_array, categories)
+MI50_hist = hist_from_array(MI50_array, categories)
+
 
 # Case study histograms as a list
-histograms = [worst_hist, best_hist, allthree_hist, twofour_hist, flat_hist]
+histograms = [FF_hist, MM_hist, II_hist, EE_hist, SS_hist, Eq20_hist, FS50_hist, ME50_hist, MI50_hist, intl_hist]
 
 # Initialize score lists
 raw_EMD_scores = np.empty(len(histograms))
@@ -102,12 +147,12 @@ modave_scores = np.empty(len(histograms))
 
 # Call score calculators on each test case histogram
 for hh in range(len(histograms)):
-    raw_EMD_scores[hh] = compute_EMD(histograms[hh], best_hist, distance_matrix)
+    raw_EMD_scores[hh] = compute_EMD(histograms[hh], SS_hist, distance_matrix)
     quint_scores[hh] = compute_quintscore(histograms[hh])
     modave_scores[hh] = compute_modifiedaverage(histograms[hh])
-    best_EMD = raw_EMD_scores[0]
-    norm_EMD_score[hh] = normalize_EMDtoAverage(raw_EMD_scores[0], raw_EMD_scores[hh], categories)
-    print(histograms[hh], norm_EMD_score[hh], quint_scores[hh], modave_scores[hh])
+    worst_EMD = raw_EMD_scores[0]
+    norm_EMD_score[hh] = normalize_EMDtoAverage(worst_EMD, raw_EMD_scores[hh], categories)
+    print(histograms[hh], f'{norm_EMD_score[hh]:.3}', quint_scores[hh], modave_scores[hh])
 
 
 rand_raw_EMD_scores = np.empty(counts)
@@ -115,40 +160,43 @@ rand_norm_EMD_score = np.empty(counts)
 rand_quint_scores = np.empty(counts)
 rand_modave_scores = np.empty(counts)
 
-for jj in range(counts):
-    # n random floats 
-    rand_n = [ random.random() for ii in range(categories) ]
-    # extend the floats so the sum is approximately x (might be up to 3 less, because of flooring) 
-    bmp_hist = [ math.floor(ii * counts / sum(rand_n)) for ii in rand_n ] 
-    # randomly add missing numbers 
-    for ii in range(counts - sum(bmp_hist)): 
-        bmp_hist[random.randint(0,categories-1)] += 1.0
-    # print("The sum is %d" % sum(bmp_hist))
-    # print(bmp_hist)
+# for jj in range(counts):
+#     # n random floats 
+#     rand_n = [ random.random() for ii in range(categories) ]
+#     # extend the floats so the sum is approximately x (might be up to 3 less, because of flooring) 
+#     bmp_hist = [ math.floor(ii * bmps / sum(rand_n)) for ii in rand_n ] 
+#     # randomly add missing numbers 
+#     for ii in range(bmps - sum(bmp_hist)): 
+#         bmp_hist[random.randint(0,categories-1)] += 1.0
+#     # print("The sum is %d" % sum(bmp_hist))
+#     # print(bmp_hist)
     
-    bmp_ints = [float(value) for value in bmp_hist]
-    bmp_counts = np.array(bmp_ints)
+#     bmp_ints = [float(value) for value in bmp_hist]
+#     bmp_counts = np.array(bmp_ints)
 
-    # print(bmp_hist, compute_EMD(bmp_counts, pref_counts, distance_matrix), compute_quintscore(bmp_counts))
-    rand_raw_EMD_scores[jj] = compute_EMD(bmp_counts, best_hist, distance_matrix)
-    rand_quint_scores[jj] = compute_quintscore(bmp_counts)
-    rand_modave_scores[jj] = compute_modifiedaverage(bmp_counts)
-    rand_norm_EMD_score[jj] = normalize_EMDtoAverage(best_EMD, rand_raw_EMD_scores[jj], categories)
-    print(bmp_counts, rand_norm_EMD_score[jj], rand_quint_scores[jj], rand_modave_scores[jj])
+#     # print(bmp_hist, compute_EMD(bmp_counts, pref_counts, distance_matrix), compute_quintscore(bmp_counts))
+#     rand_raw_EMD_scores[jj] = compute_EMD(bmp_counts, SS_hist, distance_matrix)
+#     rand_quint_scores[jj] = compute_quintscore(bmp_counts)
+#     rand_modave_scores[jj] = compute_modifiedaverage(bmp_counts)
+#     rand_norm_EMD_score[jj] = normalize_EMDtoAverage(worst_EMD, rand_raw_EMD_scores[jj], categories)
+#     if ( 2.99 < rand_norm_EMD_score[jj] < 3.01 ):
+#         print(bmp_counts, rand_norm_EMD_score[jj], rand_quint_scores[jj], rand_modave_scores[jj])
 
 # histograms.append(pref_counts)
 # EMD_scores.append(compute_EMD(pref_counts, pref_counts, distance_matrix))
-# quint_scores.append(compute_quintscore(pref_counts))
+# quint_scores.append(compute_quintscore(pref_counts)
 
-plt.scatter(rand_quint_scores, rand_norm_EMD_score, color='k', marker='.', label='Random Sets')
-plt.scatter(quint_scores[0], norm_EMD_score[0], color='k', marker='*', s=10, label='All Fails')
-plt.scatter(quint_scores[1], norm_EMD_score[1], color='b', marker='*', label='All Succeeds')
-plt.scatter(quint_scores[2], norm_EMD_score[2], color='g', marker='*', label='All Contributing')
-plt.scatter(quint_scores[3], norm_EMD_score[3], color='c', marker='*', label='Subpar-Surpass Split')
-plt.scatter(quint_scores[4], norm_EMD_score[4], color='r', marker='*', label='Equal Distribution')
+
+marker_cycler = ["o", "v", "^", "<", ">", "s", "+", "x", ".", "*"]
+label_cycler = ["FF", "MM", "II", "EE", "SS", "Eq20", "FS50", "ME50", "MI50", "Int'l Database"]
+
+# plt.scatter(rand_quint_scores, rand_norm_EMD_score, color='k', marker='.', label='Random Sets')
+plt.figure()
+for hh in range(len(histograms)):
+    plt.scatter(quint_scores[hh], norm_EMD_score[hh], marker=marker_cycler[hh], label=label_cycler[hh])
 plt.legend()
-plt.xlabel("Quintile Score: 1 (Worst) - 5 (Best)")
-plt.ylabel("normalized Earth Mover's Distance: 0 (Worst) - 5 (Best)")
+plt.xlabel("Quint Average: 1.0 (Worst) - 5.0 (Best)")
+plt.ylabel("Threshold Cross: 3.5 (Worst) - 0.0 (Best)")
 plt.show()
 
 quit()
