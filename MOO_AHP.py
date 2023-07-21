@@ -10,22 +10,22 @@ import numpy as np
 # label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), \
 #                 "Cu = " + str(rankings[2]), "FIB = " + str(rankings[3]),]
 
-# Test Case - N = 4, extreme ranking
-categories = ['TSS', 'TN', 'Cu', 'FIB']
-TCPI = [3.5, 3.5, 3.5, 0]
-rankings = [1, 4, 4, 4]
-marker_cycler = ["o", "v", "^", "<"]
-label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), \
-                "Cu = " + str(rankings[2]), "FIB = " + str(rankings[3]),]
+# # Test Case - N = 4, extreme ranking
+# categories = ['TSS', 'TN', 'Cu', 'FIB']
+# TCPI = [3.5, 3.5, 3.5, 0]
+# rankings = [1, 4, 4, 4]
+# marker_cycler = ["o", "v", "^", "<"]
+# label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), \
+#                 "Cu = " + str(rankings[2]), "FIB = " + str(rankings[3]),]
 
 
-# # Test Case - N = 6, sequential ranking
-# categories = ['TSS', 'TN', 'TP', 'Cu', 'Zn', 'FIB']
-# TCPI = [3.5, 3.5, 3.5, 0, 0, 0]
-# rankings = [1, 2, 3, 4, 5, 6]
-# marker_cycler = ["o", "v", "^", "<", ">", "x"]
-# label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), "TP = " + str(rankings[2]), \
-#                 "Cu = " + str(rankings[3]), "Zn = " + str(rankings[4]), "FIB = " + str(rankings[5]),]
+# Test Case - N = 6, sequential ranking
+categories = ['TSS', 'TN', 'TP', 'Cu', 'Zn', 'FIB']
+rankings = [1, 2, 3, 4, 5, 6]
+TCPI = [3.5, 3.5, 3.5, 0, 0, 0]
+marker_cycler = ["o", "v", "^", "<", ">", "x"]
+label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), "TP = " + str(rankings[2]), \
+                "Cu = " + str(rankings[3]), "Zn = " + str(rankings[4]), "FIB = " + str(rankings[5]),]
 
 
 # Initialize an empty dictionary to store the combinations and rankings
