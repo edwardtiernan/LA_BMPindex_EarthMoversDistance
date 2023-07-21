@@ -86,7 +86,7 @@ def compute_EMD(observed_hist, pref_hist, distance_matrix):
 # Normalize the Earth Movers Distance score to being from (0, N) where 0 is the All Success score and N is equal to the sum of threshold weights needed to cross from Failure to Success
 def normalize_EMDtoAverage(max_EMD, EMD, categories):
     norm_EMD =  np.max(distance_matrix) * EMD / max_EMD
-    # norm_EMD = 4 - 3*EMD/max_EMD
+    # norm_EMD = 5 - 4*EMD/max_EMD
     return norm_EMD
 
 # Compute the quintile score - weighted average with frequency where weight is the categorical score 
@@ -96,7 +96,11 @@ def compute_quintscore(observed_hist):
     quint_score = 0
     for prop in range(len(proportions)):
         quint_score = quint_score + proportions[prop] * (prop + 1)
-    return quint_score
+    # return quint_score
+
+    # Reverse the quint score so it trends with the TCPI
+    quint_score_r = categories + 1 - quint_score
+    return quint_score_r
 
 # This subroutine converts an array of BMP categories into a histogram that can be analyzed
 def hist_from_array(input_array, categories):
@@ -150,12 +154,15 @@ def main():
     marker_cycler = ["o", "v", "^", "<", ">", "s", "+", "x", ".", "*"]
     label_cycler = ["FF", "MM", "II", "EE", "SS", "Eq20", "FS50", "ME50", "MI50", "Int'l Database"]
 
-    plt.figure()
+    f = plt.figure()
+    ax = f.add_subplot(111)
+    # ax.yaxis.tick_right()
+    # ax.yaxis.set_label_position("right")
     for hh in range(len(histograms)):
         plt.scatter(quint_scores[hh], norm_EMD_score[hh], marker=marker_cycler[hh], label=label_cycler[hh])
     plt.legend()
-    plt.xlabel("Quint Average: 1.0 (Worst) - 5.0 (Best)")
-    plt.ylabel("Threshold Cross: 3.5 (Worst) - 0.0 (Best)")
+    plt.xlabel("Quint Average: 1.0 (Best) - 5.0 (Worst)")
+    plt.ylabel("Threshold Cross: 0.0 (Best) - 3.5 (Worst)")
     plt.show()
     return
 
