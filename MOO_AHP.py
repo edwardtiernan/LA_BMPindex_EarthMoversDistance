@@ -1,5 +1,6 @@
 import ahpy
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 
 # # Test Case - N = 4, sequential ranking
@@ -19,10 +20,18 @@ import numpy as np
 #                 "Cu = " + str(rankings[2]), "FIB = " + str(rankings[3]),]
 
 
+# # Test Case - N = 6, sequential ranking
+# categories = ['TSS', 'TN', 'TP', 'Cu', 'Zn', 'FIB']
+# rankings = [1, 2, 3, 4, 5, 6]
+# TCPI = [3.5, 3.5, 3.5, 0, 0, 0]
+# marker_cycler = ["o", "v", "^", "<", ">", "x"]
+# label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), "TP = " + str(rankings[2]), \
+#                 "Cu = " + str(rankings[3]), "Zn = " + str(rankings[4]), "FIB = " + str(rankings[5]),]
+
 # Test Case - N = 6, sequential ranking
 categories = ['TSS', 'TN', 'TP', 'Cu', 'Zn', 'FIB']
-rankings = [1, 2, 3, 4, 5, 6]
-TCPI = [3.5, 3.5, 3.5, 0, 0, 0]
+TCPI = [0.5, 2.5, 2.5, 1.0, 1.0, 3.5]
+rankings = [1, 2, 2, 5, 5, 6]
 marker_cycler = ["o", "v", "^", "<", ">", "x"]
 label_cycler = ["TSS = " + str(rankings[0]), "TN = " + str(rankings[1]), "TP = " + str(rankings[2]), \
                 "Cu = " + str(rankings[3]), "Zn = " + str(rankings[4]), "FIB = " + str(rankings[5]),]
@@ -82,25 +91,63 @@ print(ahp_list)
 print(ahp_weights_ranksum)
 # print(ahp_list)
 
+def radar_chart(categories, values, title, color_map = 'viridis'):
+    # Calculate angle for each category
+    angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
+
+    # Ensure the plot is a full circle
+    values += values[:1]
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+
+    # Use colormap to map values to colors
+    cmap = plt.get_cmap(color_map)
+    colors = cmap(np.array(values) / max(values))
+
+    # Draw each segment with its own color
+    for i in range(len(values) - 1):
+        color = colors[i]
+        # Create a polygon and add it to the plot
+        polygon = patches.Polygon([(angles[i], 0), (angles[i], values[i]), 
+                                    (angles[i+1], values[i+1]), (angles[i+1], 0)], closed=True, color=color)
+        ax.add_patch(polygon)
+
+    # Draw line from the center to each category and add labels
+    plt.xticks(angles[:-1], categories)
+
+    # Add markers on top of the colored area
+    for angle, value, color in zip(angles, values, colors):
+        ax.plot([angle], [value], marker='o', markersize=5, color='black')
+
+    # Fix axis to go from 0 to max value
+    ax.set_yticklabels([])
+    ax.set_rlabel_position(30)
+
+    plt.title(title)
+    plt.show()
+
+radar_chart(categories, TCPI, "TCPI Scores by Pollutant Type")
+
 # print(ahp_weights.consistency_ratio)
 
-f = plt.figure()
-ax = f.add_subplot(111)
-# ax.yaxis.tick_right()
-# ax.yaxis.set_label_position("right")
-for cat in range(len(categories)):
-    plt.scatter(ahp_weights_ranksum[cat], ahp_list[cat], marker=marker_cycler[cat], label=label_cycler[cat])
-plt.legend()
-plt.title("AHP vs Rank Sum Proportions for Ranked Pollutant Species")
-plt.xlabel("Rank Sum Proportions")
-plt.ylabel("Analytic Hierarchy Process Proportions")
-plt.xticks(np.arange(0, len(ahp_weights_ranksum)/sum(rankings)+0.01, 1/sum(rankings)))
-# plt.text(0.25, 0.85, 'N = 6', transform = ax.transAxes) # Coordinates and text
-# plt.text(0.25, 0.80, 'Sequential Ranking', transform = ax.transAxes)
-# def format_func(value, tick_number):
-#     # find number of multiples of pi/2
-#     N = len(rankings)
-#     for nn in range(N):
-#         return str(ahp_list[nn])
-# ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
-plt.show()
+# f = plt.figure()
+# ax = f.add_subplot(111)
+# # ax.yaxis.tick_right()
+# # ax.yaxis.set_label_position("right")
+# for cat in range(len(categories)):
+#     plt.scatter(ahp_weights_ranksum[cat], ahp_list[cat], marker=marker_cycler[cat], label=label_cycler[cat])
+# plt.legend()
+# plt.title("AHP vs Rank Sum Proportions for Ranked Pollutant Species")
+# plt.xlabel("Rank Sum Proportions")
+# plt.ylabel("Analytic Hierarchy Process Proportions")
+# plt.xticks(np.arange(0, len(ahp_weights_ranksum)/sum(rankings)+0.01, 1/sum(rankings)))
+# # plt.text(0.25, 0.85, 'N = 6', transform = ax.transAxes) # Coordinates and text
+# # plt.text(0.25, 0.80, 'Sequential Ranking', transform = ax.transAxes)
+# # def format_func(value, tick_number):
+# #     # find number of multiples of pi/2
+# #     N = len(rankings)
+# #     for nn in range(N):
+# #         return str(ahp_list[nn])
+# # ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
+# plt.show()
