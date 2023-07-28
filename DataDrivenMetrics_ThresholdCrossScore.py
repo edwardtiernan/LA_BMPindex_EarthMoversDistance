@@ -46,6 +46,21 @@ for ii in range(len(MI50_array)):
     if ii % 2 == 0:
         MI50_array[ii] = 3
 
+SE50_array = np.full(bmps, 5)   # Half Success and Half Excess
+for ii in range(len(SE50_array)):
+    if ii % 2 == 0:
+        SE50_array[ii] = 4
+
+EI50_array = np.full(bmps, 4)   # Half Excess and Half Insufficient
+for ii in range(len(EI50_array)):
+    if ii % 2 == 0:
+        EI50_array[ii] = 3
+
+MF50_array = np.full(bmps, 2)   # Half Marginal and Half Failure
+for ii in range(len(MF50_array)):
+    if ii % 2 == 0:
+        MF50_array[ii] = 1
+
 """
 Distance Matrices
 
@@ -127,10 +142,12 @@ def main():
     FS50_hist = hist_from_array(FS50_array, categories)
     ME50_hist = hist_from_array(ME50_array, categories)
     MI50_hist = hist_from_array(MI50_array, categories)
-
+    SE50_hist = hist_from_array(SE50_array, categories)
+    EI50_hist = hist_from_array(EI50_array, categories)
+    MF50_hist = hist_from_array(MF50_array, categories)
 
     # Case study histograms as a list
-    histograms = [FF_hist, MM_hist, II_hist, EE_hist, SS_hist, Eq20_hist, FS50_hist, ME50_hist, MI50_hist, intl_hist]
+    histograms = [FF_hist, MM_hist, II_hist, EE_hist, SS_hist, Eq20_hist, FS50_hist, ME50_hist, MI50_hist, SE50_hist, EI50_hist, MF50_hist, intl_hist]
 
     # Initialize score lists
     raw_EMD_scores = np.empty(len(histograms))
@@ -151,8 +168,8 @@ def main():
     rand_norm_EMD_score = np.empty(counts)
     rand_quint_scores = np.empty(counts)
 
-    marker_cycler = ["o", "v", "^", "<", ">", "s", "+", "x", ".", "*"]
-    label_cycler = ["FF", "MM", "II", "EE", "SS", "Eq20", "FS50", "ME50", "MI50", "Int'l Database"]
+    marker_cycler = ["o", "v", "^", "<", ">", "s", "+", "x", ".", "*", "*", "*", "*"]
+    label_cycler = ["FF", "MM", "II", "EE", "SS", "Eq20", "FS50", "ME50", "MI50", "SE50", "EI50", "MF50", "Int'l Database"]
 
     f = plt.figure()
     ax = f.add_subplot(111)
