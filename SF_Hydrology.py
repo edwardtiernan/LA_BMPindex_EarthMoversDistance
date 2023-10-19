@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+This script plots the monitoring data from the San Fransisco Green Infrastructure Monitoring Program.
+"""
+
 # Set Category Scores
 Success = 0
 Excess = 1
@@ -13,7 +17,13 @@ Failure = 10
 df = pd.read_excel('SF_BR_designstorm_data.xlsx', sheet_name='in')
 
 year = None
-site = "Sunset Rain Gardens"
+site = None
+# site = "MVGG Rain Gardens"
+# site = "Sunset Rain Gardens"
+# site = "VVGN Rain Gardens"
+# site = "Divisadero BR"
+# site = "Broderick St NW BR"
+
 
 # Remove commas from the "bypass_vol_gal", "precip/design", and "volreduc/design" columns
 df['bypass_vol_gal'] = df['bypass_vol_gal'].str.replace(',', '').astype('float64')
@@ -29,21 +39,6 @@ database = selected_columns.to_dict('SF_database')
 # Print the datatype of each column in the database
 for key, value in database.items():
     print(f"{key}: {type(value[0])}")
-
-
-# def get_columns_by_year_and_site(database, year=None, site=None):
-#     # If year and site are None, return the entire database
-#     if year is None and site is None:
-#         return database['bypass_vol_gal'], database['precip/design'], database['volreduc/design']
-
-#     # Filter the database to only include rows with the specified year and site
-#     filtered_database = {key: [value[i] for i in range(len(value)) if database['Monitoring Year'][i] == year and database['sitename'][i] == site] for key, value in database.items()}
-    
-#     # Convert the filtered database to numpy arrays
-#     numpy_arrays = {key: np.array(value) for key, value in filtered_database.items()}
-    
-#     # Return the numpy arrays for the selected columns
-#     return numpy_arrays['bypass_vol_gal'], numpy_arrays['precip/design'], numpy_arrays['volreduc/design']
 
 
 def get_columns_by_year_and_site(database, year, site):
