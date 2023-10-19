@@ -22,8 +22,8 @@ failure_2 = 5.0
 # Water quality weights for Rank10 threshold score
 success_3 = 0.0
 excess_3 = 1
-insufficient_3 = 3
-marginal_3 = 3.001
+insufficient_3 = 4
+marginal_3 = 3
 failure_3 = 10
 
 # Number of BMPs
@@ -238,7 +238,9 @@ def plot_coordinates(coordinates, scores, color_dict, average, stdev):
         plt.scatter(x[i], y[i], color=color_dict.get(score, 'k'))  # 'k' is the default color (black) if the score is not found in the dictionary
 
     # Adding an invisible data point for the legend
-    plt.scatter([], [], color='none', edgecolor='none', label=f'3.5 (Bad) - 0.0 (Good) Mash-Up Score: {average} \u00B1 {stdev}')
+    # plt.scatter([], [], color='none', edgecolor='none', label=f'10.0 (Bad) - 0.0 (Good) Mash-Up Score: {average} \u00B1 {stdev}')
+    plt.scatter([], [], color='none', edgecolor='none', label=f'10.0 (Bad) - 0.0 (Good) Mash-Up Score: {average}')
+
 
     # Set the x-axis and y-axis limits to be from 0 to 2
     plt.xlim(0, 2)
@@ -275,35 +277,35 @@ def main():
     label_cycler = ["FF", "MM", "II", "EE", "SS", "Eq20", "FS50", "FE50", "FI50", "FM50", "MS50", "ME50", "MI50", "IS50", "IE50", "ES50"]
 
     # plt.scatter(rand_quint_scores, rand_norm_EMD_score, color='k', marker='.', label='Random Sets')
-    plt.figure(figsize=(10, 6))
+    # plt.figure(figsize=(10, 6))
 
-    texts = []  # To store all the annotations
-    for hh, test_case in enumerate(test_cases):
+    # texts = []  # To store all the annotations
+    # for hh, test_case in enumerate(test_cases):
 
-        # Use hh to access the corresponding scores and label, and use next(marker_cycler) to get the next marker in the cycle.
-        x, y = scores_3[hh], scores_1[hh]
-        plt.scatter(x, y, marker=next(marker_cycler))
+    #     # Use hh to access the corresponding scores and label, and use next(marker_cycler) to get the next marker in the cycle.
+    #     x, y = scores_3[hh], scores_1[hh]
+    #     plt.scatter(x, y, marker=next(marker_cycler))
         
-        # # Annotate each point with the corresponding label from label_cycler
-        # plt.annotate(label_cycler[hh], (x, y), textcoords="offset points", xytext=(0, 10), ha='center')    
+    #     # # Annotate each point with the corresponding label from label_cycler
+    #     plt.annotate(label_cycler[hh], (x, y), textcoords="offset points", xytext=(0, 10), ha='center')    
 
-        # Annotate each point with the corresponding label from label_cycler
-        texts.append(plt.text(x, y, label_cycler[hh], ha='center', va='center'))
+    #     # Annotate each point with the corresponding label from label_cycler
+    #     texts.append(plt.text(x, y, label_cycler[hh], ha='center', va='center'))
     
-    adjust_text(texts)
+    # adjust_text(texts)
     
     # plt.legend()
-    plt.xlabel("Threshold Cross New: 3.5 (Worst) - 0.0 (Best)")
-    plt.ylabel("Threshold Cross Old: 3.5 (Worst) - 0.0 (Best)")
-    plt.grid(True)
-    plt.show()
+    # plt.xlabel("Threshold Cross New: 3.5 (Worst) - 0.0 (Best)")
+    # plt.ylabel("Threshold Cross Old: 3.5 (Worst) - 0.0 (Best)")
+    # plt.grid(True)
+    # plt.show()
 
 
     # Plot the randomly generated test cases and their scores on the WQ Framework
     for ii in range(5):
         # coords = generate_coordinates(12, 26, 4, 35, 23) # Int'l Database
-        # coords = generate_coordinates(0, 0, 0, 25, 25) # F, M, I, E, S
-        coords = generate_random_coordinates(50, 0.6, 0.4)
+        coords = generate_coordinates(0, 0, 50, 0, 50) # F, M, I, E, S
+        # coords = generate_random_coordinates(50, 0.6, 0.4)
         score_array = evaluate_coords(coords, success_3, excess_3, insufficient_3, marginal_3, failure_3)
 
         average = round(np.average(score_array), 2)
@@ -331,7 +333,7 @@ def main():
 
         # Example Usage:
         # coordinates = np.array([[0.5, 1.5], [1.2, 0.8], [1.5, 1.9], [0.7, 0.3]])
-        # plot_coordinates(coords, score_array, color_dict, average, stdev)
+        plot_coordinates(coords, score_array, color_dict, average, stdev)
 
 main()
 
